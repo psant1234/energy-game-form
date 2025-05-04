@@ -3,11 +3,41 @@
 <head>
   <title>Energy Game Submission Form</title>
   <script>
+    const portfolioPlants = {
+      'Bay_Views': ['MORRO_BAY_1-2', 'MORRO_BAY_3-4', 'MOSS_LANDING_6', 'MOSS_LANDING_7', 'OAKLAND'],
+      'Beachfront': ['COOLWATER', 'ETIWANDA_1-4', 'ETIWANDA_5', 'ELLWOOD', 'MANDALAY_1-2', 'MANDALAY_3', 'ORMOND_BEACH_1', 'ORMOND_BEACH_2'],
+      'Big_Coal': ['Four Corners', 'ALAMITOS_7', 'HUNTINGTON_BEACH_1-2', 'HUNTINGTON_BEACH_5', 'REDONDO_5-6', 'REDONDO_7-8'],
+      'Big_Gas': ['EL_SEGUNDO_1-2', 'EL_SEGUNDO_3-4', 'LONG_BEACH', 'NORTH_ISLAND', 'ENCINA', 'KEARNY', 'SOUTH_BAY'],
+      'East_Bay': ['PITTSBURGH_1-4', 'PITTSBURGH_5-6', 'PITTSBURG_7', 'CONTRA_COSTA_4-5', 'CONTRA_COSTA_6-7', 'POTRERO_HILL'],
+      'Low_Fossil': ['HUMBOLDT', 'HELMS', 'HUNTERS_POINT_1-2', 'HUNTERS_POINT_4', 'DIABLO_CANYON_1'],
+      'Old_Timers': ['BIG_CREEK', 'MOHAVE_1', 'MOHAVE_2', 'HIGHGROVE', 'SAN_BERNARDINO']
+    };
+
+    function showPlantForm() {
+      const portfolio = document.getElementById("portfolio").value;
+      const plantSection = document.getElementById("plantSection");
+      plantSection.innerHTML = '';
+
+      if (portfolio in portfolioPlants) {
+        portfolioPlants[portfolio].forEach(plant => {
+          const div = document.createElement("div");
+          div.innerHTML = `
+            <h4>${plant}</h4>
+            Hour 1 Price: <input type="number" name="${plant}_price1" step="0.01" required><br>
+            Hour 2 Price: <input type="number" name="${plant}_price2" step="0.01" required><br>
+            Hour 3 Price: <input type="number" name="${plant}_price3" step="0.01" required><br>
+            Hour 4 Price: <input type="number" name="${plant}_price4" step="0.01" required><br><br>
+          `;
+          plantSection.appendChild(div);
+        });
+        document.getElementById("step1").style.display = "none";
+        document.getElementById("step2").style.display = "block";
+      }
+    }
+
     function submitForm() {
-      const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec'; // Replace with your deployed Apps Script URL
-
+      const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec';
       const formData = new FormData(document.getElementById("energyForm"));
-
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(response => alert('Submission successful!'))
         .catch(error => alert('Submission failed: ' + error.message));
@@ -17,25 +47,40 @@
 <body>
   <h2>Energy Game Submission Form</h2>
   <form id="energyForm" onsubmit="event.preventDefault(); submitForm();">
-    <label>Team Name:</label><br>
-    <input type="text" name="team" required><br><br>
 
-    <label>Portfolio Name:</label><br>
-    <input type="text" name="portfolio" required><br><br>
+    <div id="step1">
+      <label>Team Name:</label><br>
+      <select name="team" required>
+        <option value="">-- Select Team --</option>
+        <option>Arrow</option>
+        <option>Becker</option>
+        <option>Coase</option>
+        <option>Debreu</option>
+        <option>Friedman</option>
+        <option>Heckman</option>
+        <option>Krugman</option>
+      </select><br><br>
 
-    <label>Plant Name:</label><br>
-    <input type="text" name="plant" required><br><br>
+      <label>Portfolio:</label><br>
+      <select name="portfolio" id="portfolio" required>
+        <option value="">-- Select Portfolio --</option>
+        <option>Low_Fossil</option>
+        <option>Beachfront</option>
+        <option>Old_Timers</option>
+        <option>Big_Coal</option>
+        <option>Big_Gas</option>
+        <option>Bay_Views</option>
+        <option>East_Bay</option>
+      </select><br><br>
 
-    <label>Hour 1 Price:</label>
-    <input type="number" name="price1" step="0.01" required><br>
-    <label>Hour 2 Price:</label>
-    <input type="number" name="price2" step="0.01" required><br>
-    <label>Hour 3 Price:</label>
-    <input type="number" name="price3" step="0.01" required><br>
-    <label>Hour 4 Price:</label>
-    <input type="number" name="price4" step="0.01" required><br><br>
+      <button type="button" onclick="showPlantForm()">Next</button>
+    </div>
 
-    <button type="submit">Submit</button>
+    <div id="step2" style="display:none">
+      <div id="plantSection"></div>
+      <button type="submit">Submit</button>
+    </div>
+
   </form>
 </body>
 </html>
