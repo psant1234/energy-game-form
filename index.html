@@ -2,6 +2,76 @@
 <html>
 <head>
   <title>Energy Game Submission Form</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background-color: #f5f5f5;
+      padding: 30px;
+      color: #333;
+    }
+
+    h2 {
+      color: #8A1538; /* MIT red */
+      text-align: center;
+    }
+
+    form {
+      background-color: white;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-top: 15px;
+      color: #8A1538;
+    }
+
+    select, input[type="number"] {
+      width: 100%;
+      padding: 8px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      box-sizing: border-box;
+    }
+
+    button {
+      background-color: #8A1538;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin-top: 20px;
+      border-radius: 5px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #6d0f2e;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    th, td {
+      border: 1px solid #ddd;
+      padding: 10px;
+      text-align: center;
+    }
+
+    th {
+      background-color: #8A1538;
+      color: white;
+    }
+  </style>
   <script>
     const portfolioPlants = {
       'Bay_Views': ['MORRO_BAY_1-2', 'MORRO_BAY_3-4', 'MOSS_LANDING_6', 'MOSS_LANDING_7', 'OAKLAND'],
@@ -19,17 +89,24 @@
       plantSection.innerHTML = '';
 
       if (portfolio in portfolioPlants) {
+        const table = document.createElement("table");
+        const header = document.createElement("tr");
+        header.innerHTML = '<th>Plant</th><th>Hour 1</th><th>Hour 2</th><th>Hour 3</th><th>Hour 4</th>';
+        table.appendChild(header);
+
         portfolioPlants[portfolio].forEach(plant => {
-          const div = document.createElement("div");
-          div.innerHTML = `
-            <h4>${plant}</h4>
-            Hour 1 Price: <input type="number" name="${plant}_price1" step="0.01" required><br>
-            Hour 2 Price: <input type="number" name="${plant}_price2" step="0.01" required><br>
-            Hour 3 Price: <input type="number" name="${plant}_price3" step="0.01" required><br>
-            Hour 4 Price: <input type="number" name="${plant}_price4" step="0.01" required><br><br>
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${plant}</td>
+            <td><input type="number" name="${plant}_price1" step="0.01" required></td>
+            <td><input type="number" name="${plant}_price2" step="0.01" required></td>
+            <td><input type="number" name="${plant}_price3" step="0.01" required></td>
+            <td><input type="number" name="${plant}_price4" step="0.01" required></td>
           `;
-          plantSection.appendChild(div);
+          table.appendChild(row);
         });
+
+        plantSection.appendChild(table);
         document.getElementById("step1").style.display = "none";
         document.getElementById("step2").style.display = "block";
       }
@@ -47,9 +124,8 @@
 <body>
   <h2>Energy Game Submission Form</h2>
   <form id="energyForm" onsubmit="event.preventDefault(); submitForm();">
-
     <div id="step1">
-      <label>Team Name:</label><br>
+      <label for="team">Team Name:</label>
       <select name="team" required>
         <option value="">-- Select Team --</option>
         <option>Arrow</option>
@@ -59,9 +135,9 @@
         <option>Friedman</option>
         <option>Heckman</option>
         <option>Krugman</option>
-      </select><br><br>
+      </select>
 
-      <label>Portfolio:</label><br>
+      <label for="portfolio">Portfolio:</label>
       <select name="portfolio" id="portfolio" required>
         <option value="">-- Select Portfolio --</option>
         <option>Low_Fossil</option>
@@ -71,7 +147,7 @@
         <option>Big_Gas</option>
         <option>Bay_Views</option>
         <option>East_Bay</option>
-      </select><br><br>
+      </select>
 
       <button type="button" onclick="showPlantForm()">Next</button>
     </div>
@@ -80,7 +156,6 @@
       <div id="plantSection"></div>
       <button type="submit">Submit</button>
     </div>
-
   </form>
 </body>
 </html>
