@@ -89,7 +89,7 @@
     };
 
     let currentUser = {};
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzKQPRedbiR6jJ4Ked4NIThDYP1rj7fEJ3att1EzMVmC_QzBtbverwqp1d_j7S2q3JGpg/exec'; // Replace with your actual deployed Apps Script URL
+    const scriptURL = 'https://script.google.com/macros/s/AKfycbzKQPRedbiR6jJ4Ked4NIThDYP1rj7fEJ3att1EzMVmC_QzBtbverwqp1d_j7S2q3JGpg/exec'; // <-- Replace this with your actual Apps Script URL
 
     function login() {
       const username = document.getElementById("username").value;
@@ -105,25 +105,24 @@
           currentUser = data;
           document.getElementById("loginSection").style.display = "none";
           document.getElementById("formSection").style.display = "block";
-
           document.getElementById("team").value = data.team;
-          document.getElementById("hiddenWorld").value = data.world;
 
           document.getElementById("displayUsername").textContent = data.username;
           document.getElementById("displayWorld").textContent = data.world;
           document.getElementById("displayPortfolio").textContent = data.portfolio;
 
           const portfolioSelect = document.getElementById("portfolio");
+          const worldSelect = document.getElementById("worldSelect");
 
           if (data.role === "admin") {
             document.getElementById("adminControls").style.display = "block";
             portfolioSelect.disabled = false;
-            document.getElementById("worldSelect").disabled = false;
+            worldSelect.disabled = false;
           } else {
             portfolioSelect.value = data.portfolio;
+            worldSelect.value = data.world;
             portfolioSelect.disabled = true;
-            document.getElementById("worldSelect").value = data.world;
-            document.getElementById("worldSelect").disabled = true;
+            worldSelect.disabled = true;
             generatePlantForm(data.portfolio);
           }
         } else {
@@ -136,6 +135,7 @@
       currentUser = {};
       document.getElementById("formSection").style.display = "none";
       document.getElementById("loginSection").style.display = "block";
+      document.getElementById("plantSection").innerHTML = "";
     }
 
     function generatePlantForm(portfolio) {
@@ -173,16 +173,18 @@
       formData.append("username", currentUser.username);
       formData.append("team", currentUser.team);
       formData.append("portfolio", document.getElementById("portfolio").value);
-    
+
       const worldValue = currentUser.role === "admin"
         ? document.getElementById("worldSelect").value
         : currentUser.world;
+
       formData.append("world", worldValue);
-    
+
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(response => alert('Submission successful!'))
         .catch(error => alert('Submission failed: ' + error.message));
     }
+
     function adminLoadPortfolio() {
       const portfolio = document.getElementById("portfolio").value;
       generatePlantForm(portfolio);
@@ -237,11 +239,11 @@
         World: <span id="displayWorld"></span><br>
         Portfolio: <span id="displayPortfolio"></span>
       </div>
+
       <button onclick="logout()" style="float:right; background-color:#ccc; color:#333">Log Out</button>
 
       <form id="energyForm" onsubmit="event.preventDefault(); submitForm();">
         <input type="hidden" id="team" name="team">
-        <input type="hidden" id="hiddenWorld" name="hiddenWorld">
 
         <div id="adminControls" style="display:none">
           <label for="worldSelect">World:</label>
