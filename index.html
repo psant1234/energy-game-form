@@ -91,7 +91,7 @@
     };
 
     let currentUser = {};
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzKQPRedbiR6jJ4Ked4NIThDYP1rj7fEJ3att1EzMVmC_QzBtbverwqp1d_j7S2q3JGpg/exec';
+    const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec';
 
     function login() {
       const username = document.getElementById("username").value;
@@ -126,6 +126,15 @@
           alert("Invalid credentials. Please try again.");
         }
       });
+    }
+
+    function logout() {
+      currentUser = {};
+      document.getElementById("formSection").style.display = "none";
+      document.getElementById("loginSection").style.display = "block";
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
+      document.getElementById("plantSection").innerHTML = "";
     }
 
     function generatePlantForm(portfolio) {
@@ -188,15 +197,16 @@
 
     <div id="loginSection">
       <label>Username:</label>
-      <input type="text" id="username">
+      <input type="text" id="username" name="username" autocomplete="username">
 
       <label>Password:</label>
-      <input type="password" id="password">
+      <input type="password" id="password" name="password" autocomplete="current-password">
 
       <button onclick="login()">Login</button>
     </div>
 
     <div id="formSection" style="display:none">
+      <button onclick="logout()" style="float:right; background-color:#ccc; color:#333">Log Out</button>
       <form id="energyForm" onsubmit="event.preventDefault(); submitForm();">
         <input type="hidden" id="team" name="team">
         <input type="hidden" id="world" name="world">
