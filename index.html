@@ -68,14 +68,6 @@
       background-color: #8A1538;
       color: white;
     }
-    #lastSubmission {
-      margin-top: 20px;
-      background-color: #eef0f2;
-      padding: 15px;
-      border-radius: 5px;
-      font-size: 14px;
-      color: #333;
-    }
   </style>
   <script>
     const portfolioPlants = {
@@ -120,11 +112,10 @@
             worldSelect.disabled = false;
           } else {
             portfolioSelect.value = data.portfolio;
-            worldSelect.value = data.world;
+            worldSelect.value = data.world; // ✅ fix: assign world value for players
             portfolioSelect.disabled = true;
             worldSelect.disabled = true;
             generatePlantForm(data.portfolio);
-            document.getElementById("retrieveButton").style.display = "block";
           }
         } else {
           alert("Invalid credentials.");
@@ -156,14 +147,11 @@
             <td><input type="number" name="${plant}_price1" min="0" max="500" step="0.01" required></td>
             <td><input type="number" name="${plant}_price2" min="0" max="500" step="0.01" required></td>
             <td><input type="number" name="${plant}_price3" min="0" max="500" step="0.01" required></td>
-            <td><input type="number" name="${plant}_price4" min="0" max="500" step="0.01" required></td>`;
+            <td><input type="number" name="${plant}_price4" min="0" max="500" step="0.01" required></td>
+          `;
           table.appendChild(row);
         });
         section.appendChild(table);
-
-        const lastDiv = document.createElement("div");
-        lastDiv.id = "lastSubmission";
-        section.appendChild(lastDiv);
       }
     }
 
@@ -172,7 +160,7 @@
       formData.append("username", currentUser.username);
       formData.append("team", currentUser.team);
       formData.append("portfolio", document.getElementById("portfolio").value);
-      formData.append("world", document.getElementById("worldSelect").value);
+      formData.append("world", document.getElementById("worldSelect").value); // ✅ fix: use dropdown value
 
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(response => alert('Submission successful!'))
@@ -182,35 +170,6 @@
     function adminLoadPortfolio() {
       const selectedPortfolio = document.getElementById("portfolio").value;
       generatePlantForm(selectedPortfolio);
-    }
-
-    function getLastSubmission() {
-      const display = document.getElementById("lastSubmission");
-      display.innerHTML = "Loading...";
-
-      fetch(`${scriptURL}?action=last&username=${currentUser.username}&portfolio=${currentUser.portfolio}`)
-        .then(res => res.json())
-        .then(data => {
-          if (data.success && data.rows.length > 0) {
-            display.innerHTML = `<b>Last Submission</b><br><br>`;
-            data.rows.forEach(row => {
-              display.innerHTML += `<b>${row.plant}</b>: [${row.hour1}, ${row.hour2}, ${row.hour3}, ${row.hour4}]<br>`;
-              const p1 = document.querySelector(`input[name='${row.plant}_price1']`);
-              const p2 = document.querySelector(`input[name='${row.plant}_price2']`);
-              const p3 = document.querySelector(`input[name='${row.plant}_price3']`);
-              const p4 = document.querySelector(`input[name='${row.plant}_price4']`);
-              if (p1) p1.value = row.hour1;
-              if (p2) p2.value = row.hour2;
-              if (p3) p3.value = row.hour3;
-              if (p4) p4.value = row.hour4;
-            });
-          } else {
-            display.innerHTML = "No previous submission found.";
-          }
-        })
-        .catch(err => {
-          display.innerHTML = "Error retrieving last submission.";
-        });
     }
 
     document.addEventListener("DOMContentLoaded", () => {
@@ -262,11 +221,6 @@
         </div>
 
         <div id="plantSection"></div>
-
-        <div style="margin-top: 20px;">
-          <button type="button" onclick="getLastSubmission()" id="retrieveButton" style="display:none;">Retrieve Last Submission</button>
-        </div>
-
         <button type="submit">Submit</button>
       </form>
     </div>
