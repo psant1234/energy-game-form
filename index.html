@@ -100,7 +100,7 @@
     };
 
     let currentUser = {};
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzKQPRedbiR6jJ4Ked4NIThDYP1rj7fEJ3att1EzMVmC_QzBtbverwqp1d_j7S2q3JGpg/exec';
+    const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec';
 
     function login() {
       const username = document.getElementById("username").value;
@@ -221,6 +221,18 @@
           display.innerHTML = "Error retrieving last submission.";
         });
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const portfolioSelect = document.getElementById("portfolio");
+      if (portfolioSelect) {
+        Object.keys(portfolioPlants).forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p;
+          opt.textContent = p;
+          portfolioSelect.appendChild(opt);
+        });
+      }
+    });
   </script>
 </head>
 <body>
@@ -265,4 +277,3 @@
   </div>
 </body>
 </html>
-
