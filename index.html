@@ -68,6 +68,14 @@
       background-color: #8A1538;
       color: white;
     }
+    #lastSubmission {
+      margin-top: 20px;
+      background-color: #eef0f2;
+      padding: 15px;
+      border-radius: 5px;
+      font-size: 14px;
+      color: #333;
+    }
   </style>
   <script>
     const portfolioPlants = {
@@ -86,6 +94,7 @@
     function login() {
       const username = document.getElementById("username").value;
       const password = document.getElementById("password").value;
+
       fetch(scriptURL, {
         method: 'POST',
         body: new URLSearchParams({ action: 'validate', username, password })
@@ -96,12 +105,27 @@
           currentUser = data;
           document.getElementById("loginSection").style.display = "none";
           document.getElementById("formSection").style.display = "block";
-          document.getElementById("portfolio").value = data.portfolio;
-          document.getElementById("portfolio").disabled = true;
-          document.getElementById("displayWorld").textContent = data.world;
+          document.getElementById("team").value = data.team;
+
           document.getElementById("displayUsername").textContent = data.username;
+          document.getElementById("displayWorld").textContent = data.world;
           document.getElementById("displayPortfolio").textContent = data.portfolio;
-          generatePlantForm(data.portfolio);
+
+          const portfolioSelect = document.getElementById("portfolio");
+          const worldSelect = document.getElementById("worldSelect");
+
+          if (data.role === "admin") {
+            document.getElementById("adminControls").style.display = "block";
+            portfolioSelect.disabled = false;
+            worldSelect.disabled = false;
+          } else {
+            portfolioSelect.value = data.portfolio;
+            worldSelect.value = data.world;
+            portfolioSelect.disabled = true;
+            worldSelect.disabled = true;
+            generatePlantForm(data.portfolio);
+            document.getElementById("retrieveButton").style.display = "block";
+          }
         } else {
           alert("Invalid credentials.");
         }
@@ -109,30 +133,37 @@
     }
 
     function logout() {
-      location.reload();
+      currentUser = {};
+      document.getElementById("formSection").style.display = "none";
+      document.getElementById("loginSection").style.display = "block";
+      document.getElementById("plantSection").innerHTML = "";
     }
 
     function generatePlantForm(portfolio) {
       const section = document.getElementById("plantSection");
-      section.innerHTML = "";
+      section.innerHTML = '';
+
       const table = document.createElement("table");
-      table.innerHTML = "<tr><th>Plant</th><th>Hour 1</th><th>Hour 2</th><th>Hour 3</th><th>Hour 4</th></tr>";
-      if (portfolioPlants[portfolio]) {
+      const header = document.createElement("tr");
+      header.innerHTML = '<th>Plant</th><th>Hour 1</th><th>Hour 2</th><th>Hour 3</th><th>Hour 4</th>';
+      table.appendChild(header);
+
+      if (portfolio in portfolioPlants) {
         portfolioPlants[portfolio].forEach(plant => {
           const row = document.createElement("tr");
           row.innerHTML = `
             <td>${plant}</td>
-            <td><input type="number" name="${plant}_price1" min="0" max="500"></td>
-            <td><input type="number" name="${plant}_price2" min="0" max="500"></td>
-            <td><input type="number" name="${plant}_price3" min="0" max="500"></td>
-            <td><input type="number" name="${plant}_price4" min="0" max="500"></td>`;
+            <td><input type="number" name="${plant}_price1" min="0" max="500" step="0.01" required></td>
+            <td><input type="number" name="${plant}_price2" min="0" max="500" step="0.01" required></td>
+            <td><input type="number" name="${plant}_price3" min="0" max="500" step="0.01" required></td>
+            <td><input type="number" name="${plant}_price4" min="0" max="500" step="0.01" required></td>`;
           table.appendChild(row);
         });
         section.appendChild(table);
-        const btn = document.createElement("button");
-        btn.innerText = "Retrieve Last Submission";
-        btn.onclick = getLastSubmission;
-        section.appendChild(btn);
+
+        const lastDiv = document.createElement("div");
+        lastDiv.id = "lastSubmission";
+        section.appendChild(lastDiv);
       }
     }
 
@@ -140,49 +171,102 @@
       const formData = new FormData(document.getElementById("energyForm"));
       formData.append("username", currentUser.username);
       formData.append("team", currentUser.team);
-      formData.append("portfolio", currentUser.portfolio);
-      formData.append("world", currentUser.world);
+      formData.append("portfolio", document.getElementById("portfolio").value);
+      formData.append("world", document.getElementById("worldSelect").value);
+
       fetch(scriptURL, { method: 'POST', body: formData })
-        .then(() => alert("Submission successful!"))
-        .catch(err => alert("Submission failed."));
+        .then(response => alert('Submission successful!'))
+        .catch(error => alert('Submission failed: ' + error.message));
+    }
+
+    function adminLoadPortfolio() {
+      const selectedPortfolio = document.getElementById("portfolio").value;
+      generatePlantForm(selectedPortfolio);
     }
 
     function getLastSubmission() {
-      const portfolio = currentUser.portfolio;
-      fetch(`${scriptURL}?action=last&username=${currentUser.username}&portfolio=${portfolio}`)
+      const display = document.getElementById("lastSubmission");
+      display.innerHTML = "Loading...";
+
+      fetch(`${scriptURL}?action=last&username=${currentUser.username}&portfolio=${currentUser.portfolio}`)
         .then(res => res.json())
         .then(data => {
-          if (data.success) {
-            data.rows.forEach(r => {
-              document.querySelector(`input[name='${r.plant}_price1']`).value = r.hour1;
-              document.querySelector(`input[name='${r.plant}_price2']`).value = r.hour2;
-              document.querySelector(`input[name='${r.plant}_price3']`).value = r.hour3;
-              document.querySelector(`input[name='${r.plant}_price4']`).value = r.hour4;
+          if (data.success && data.rows.length > 0) {
+            display.innerHTML = `<b>Last Submission</b><br><br>`;
+            data.rows.forEach(row => {
+              display.innerHTML += `<b>${row.plant}</b>: [${row.hour1}, ${row.hour2}, ${row.hour3}, ${row.hour4}]<br>`;
+              const p1 = document.querySelector(`input[name='${row.plant}_price1']`);
+              const p2 = document.querySelector(`input[name='${row.plant}_price2']`);
+              const p3 = document.querySelector(`input[name='${row.plant}_price3']`);
+              const p4 = document.querySelector(`input[name='${row.plant}_price4']`);
+              if (p1) p1.value = row.hour1;
+              if (p2) p2.value = row.hour2;
+              if (p3) p3.value = row.hour3;
+              if (p4) p4.value = row.hour4;
             });
           } else {
-            alert("No previous submission found.");
+            display.innerHTML = "No previous submission found.";
           }
+        })
+        .catch(err => {
+          display.innerHTML = "Error retrieving last submission.";
         });
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const portfolioSelect = document.getElementById("portfolio");
+      Object.keys(portfolioPlants).forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        portfolioSelect.appendChild(opt);
+      });
+    });
   </script>
 </head>
 <body>
   <div class="container">
-    <img class="logo" src="https://upload.wikimedia.org/wikipedia/commons/0/0c/MIT_logo.svg">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/MIT_logo.svg" class="logo" alt="MIT Logo">
     <h2>Energy Game Submission Form</h2>
+
     <div id="loginSection">
-      <label>Username</label><input id="username">
-      <label>Password</label><input id="password" type="password">
+      <label>Username:</label>
+      <input type="text" id="username">
+      <label>Password:</label>
+      <input type="password" id="password">
       <button onclick="login()">Login</button>
     </div>
-    <div id="formSection" style="display:none">
-      <div><strong>Logged in as:</strong> <span id="displayUsername"></span> | <strong>World:</strong> <span id="displayWorld"></span> | <strong>Portfolio:</strong> <span id="displayPortfolio"></span></div>
-      <button onclick="logout()" style="float:right;background:#ccc;color:#333">Logout</button>
-      <form id="energyForm" onsubmit="event.preventDefault();submitForm();">
-        <input type="hidden" name="team" value="">
-        <input type="hidden" name="world" id="world">
-        <input type="hidden" name="portfolio" id="portfolio">
+
+    <div id="formSection" style="display:none;">
+      <div style="margin-bottom: 15px; font-weight: bold; color: #8A1538;">
+        Logged in as: <span id="displayUsername"></span><br>
+        World: <span id="displayWorld"></span><br>
+        Portfolio: <span id="displayPortfolio"></span>
+      </div>
+
+      <button onclick="logout()" style="float:right; background-color:#ccc; color:#333">Log Out</button>
+
+      <form id="energyForm" onsubmit="event.preventDefault(); submitForm();">
+        <input type="hidden" id="team" name="team">
+
+        <div id="adminControls" style="display:none">
+          <label for="worldSelect">World:</label>
+          <select id="worldSelect" name="world">
+            <option value="MIT 035 G1">MIT 035 G1</option>
+            <option value="MIT 035 G2">MIT 035 G2</option>
+            <option value="MIT 035 G3">MIT 035 G3</option>
+          </select>
+
+          <label for="portfolio">Portfolio:</label>
+          <select id="portfolio" name="portfolio" onchange="adminLoadPortfolio()"></select>
+        </div>
+
         <div id="plantSection"></div>
+
+        <div style="margin-top: 20px;">
+          <button type="button" onclick="getLastSubmission()" id="retrieveButton" style="display:none;">Retrieve Last Submission</button>
+        </div>
+
         <button type="submit">Submit</button>
       </form>
     </div>
