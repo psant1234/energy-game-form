@@ -176,7 +176,7 @@
     function getLastSubmission() {
       const display = document.getElementById("lastSubmission");
       display.innerHTML = "Loading last submission...";
-      fetch(`${scriptURL}?action=last&username=${currentUser.username}`)
+      fetch(`${scriptURL}?action=last&username=${currentUser.username}&portfolio=${document.getElementById("portfolio").value}`)
         .then(res => res.json())
         .then(data => {
           if (data.success && data.rows.length > 0) {
@@ -247,3 +247,6 @@
         <button type="submit">Submit</button>
       </form>
     </div>
+  </div>
+</body>
+</html>
