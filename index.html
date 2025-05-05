@@ -38,7 +38,7 @@
       color: #8A1538;
     }
 
-    select, input[type="number"] {
+    select, input[type="number"], input[type="text"], input[type="password"] {
       width: 100%;
       padding: 8px;
       margin-top: 5px;
@@ -78,24 +78,6 @@
       background-color: #8A1538;
       color: white;
     }
-
-    @media (max-width: 600px) {
-      table, thead, tbody, th, td, tr {
-        display: block;
-        width: 100%;
-      }
-
-      th, td {
-        text-align: left;
-        border: none;
-        padding: 8px;
-      }
-
-      th {
-        background-color: transparent;
-        color: #8A1538;
-      }
-    }
   </style>
   <script>
     const portfolioPlants = {
@@ -108,41 +90,81 @@
       'Old_Timers': ['BIG_CREEK', 'MOHAVE_1', 'MOHAVE_2', 'HIGHGROVE', 'SAN_BERNARDINO']
     };
 
-    function showPlantForm() {
-      const portfolio = document.getElementById("portfolio").value;
-      const plantSection = document.getElementById("plantSection");
-      plantSection.innerHTML = '';
+    let currentUser = {};
+    const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec';
+
+    function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+
+      fetch(scriptURL, {
+        method: 'POST',
+        body: new URLSearchParams({
+          action: 'validate',
+          username,
+          password
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          currentUser = data;
+          document.getElementById("loginSection").style.display = "none";
+          document.getElementById("formSection").style.display = "block";
+          if (data.role === "admin") {
+            document.getElementById("adminControls").style.display = "block";
+          } else {
+            document.getElementById("team").value = data.team;
+            document.getElementById("portfolio").value = data.portfolio;
+            document.getElementById("world").value = data.world;
+            generatePlantForm(data.portfolio);
+          }
+        } else {
+          alert("Invalid credentials. Please try again.");
+        }
+      });
+    }
+
+    function generatePlantForm(portfolio) {
+      const section = document.getElementById("plantSection");
+      section.innerHTML = '';
+
+      const table = document.createElement("table");
+      const header = document.createElement("tr");
+      header.innerHTML = '<th>Plant</th><th>Hour 1</th><th>Hour 2</th><th>Hour 3</th><th>Hour 4</th>';
+      table.appendChild(header);
 
       if (portfolio in portfolioPlants) {
-        const table = document.createElement("table");
-        const header = document.createElement("tr");
-        header.innerHTML = '<th>Plant</th><th>Hour 1</th><th>Hour 2</th><th>Hour 3</th><th>Hour 4</th>';
-        table.appendChild(header);
-
         portfolioPlants[portfolio].forEach(plant => {
           const row = document.createElement("tr");
           row.innerHTML = `
             <td>${plant}</td>
-            <td><input type="number" name="${plant}_price1" step="0.01" required></td>
-            <td><input type="number" name="${plant}_price2" step="0.01" required></td>
-            <td><input type="number" name="${plant}_price3" step="0.01" required></td>
-            <td><input type="number" name="${plant}_price4" step="0.01" required></td>
+            <td><input type="number" name="${plant}_price1" min="0" max="500" step="0.01" required></td>
+            <td><input type="number" name="${plant}_price2" min="0" max="500" step="0.01" required></td>
+            <td><input type="number" name="${plant}_price3" min="0" max="500" step="0.01" required></td>
+            <td><input type="number" name="${plant}_price4" min="0" max="500" step="0.01" required></td>
           `;
           table.appendChild(row);
         });
-
-        plantSection.appendChild(table);
-        document.getElementById("step1").style.display = "none";
-        document.getElementById("step2").style.display = "block";
+        section.appendChild(table);
       }
     }
 
     function submitForm() {
-      const scriptURL = 'https://script.google.com/macros/s/AKfycbzKQPRedbiR6jJ4Ked4NIThDYP1rj7fEJ3att1EzMVmC_QzBtbverwqp1d_j7S2q3JGpg/exec';
       const formData = new FormData(document.getElementById("energyForm"));
+      formData.append("username", currentUser.username);
+      formData.append("team", currentUser.team);
+      formData.append("portfolio", document.getElementById("portfolio").value);
+      formData.append("world", document.getElementById("world").value);
+
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(response => alert('Submission successful!'))
         .catch(error => alert('Submission failed: ' + error.message));
+    }
+
+    function adminLoadPortfolio() {
+      const selectedPortfolio = document.getElementById("portfolio").value;
+      generatePlantForm(selectedPortfolio);
     }
   </script>
 </head>
@@ -150,40 +172,41 @@
   <div class="container">
     <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/MIT_logo.svg" alt="MIT Logo" class="logo">
     <h2>Energy Game Submission Form</h2>
-    <form id="energyForm" onsubmit="event.preventDefault(); submitForm();">
-      <div id="step1">
-        <label for="team">Team Name:</label>
-        <select name="team" required>
-          <option value="">-- Select Team --</option>
-          <option>Arrow</option>
-          <option>Becker</option>
-          <option>Coase</option>
-          <option>Debreu</option>
-          <option>Friedman</option>
-          <option>Heckman</option>
-          <option>Krugman</option>
-        </select>
 
-        <label for="portfolio">Portfolio:</label>
-        <select name="portfolio" id="portfolio" required>
-          <option value="">-- Select Portfolio --</option>
-          <option>Low_Fossil</option>
-          <option>Beachfront</option>
-          <option>Old_Timers</option>
-          <option>Big_Coal</option>
-          <option>Big_Gas</option>
-          <option>Bay_Views</option>
-          <option>East_Bay</option>
-        </select>
+    <div id="loginSection">
+      <label>Username:</label>
+      <input type="text" id="username">
 
-        <button type="button" onclick="showPlantForm()">Next</button>
-      </div>
+      <label>Password:</label>
+      <input type="password" id="password">
 
-      <div id="step2" style="display:none">
+      <button onclick="login()">Login</button>
+    </div>
+
+    <div id="formSection" style="display:none">
+      <form id="energyForm" onsubmit="event.preventDefault(); submitForm();">
+        <input type="hidden" id="team" name="team">
+        <input type="hidden" id="world" name="world">
+
+        <div id="adminControls" style="display:none">
+          <label for="world">World:</label>
+          <select id="world" name="world">
+            <option value="G1">G1</option>
+            <option value="G2">G2</option>
+            <option value="G3">G3</option>
+          </select>
+
+          <label for="portfolio">Portfolio:</label>
+          <select id="portfolio" name="portfolio" onchange="adminLoadPortfolio()">
+            <option value="">-- Select Portfolio --</option>
+            ${Object.keys(portfolioPlants).map(p => `<option value="${p}">${p}</option>`).join('')}
+          </select>
+        </div>
+
         <div id="plantSection"></div>
         <button type="submit">Submit</button>
-      </div>
-    </form>
+      </form>
+    </div>
   </div>
 </body>
 </html>
