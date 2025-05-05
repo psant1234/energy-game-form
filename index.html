@@ -111,13 +111,16 @@
           currentUser = data;
           document.getElementById("loginSection").style.display = "none";
           document.getElementById("formSection").style.display = "block";
+
+          document.getElementById("team").value = data.team;
+          document.getElementById("world").value = data.world;
+
           if (data.role === "admin") {
             document.getElementById("adminControls").style.display = "block";
           } else {
-            document.getElementById("team").value = data.team;
             document.getElementById("portfolio").value = data.portfolio;
-            document.getElementById("world").value = data.world;
             generatePlantForm(data.portfolio);
+            document.getElementById("portfolio").disabled = true;
           }
         } else {
           alert("Invalid credentials. Please try again.");
@@ -166,6 +169,16 @@
       const selectedPortfolio = document.getElementById("portfolio").value;
       generatePlantForm(selectedPortfolio);
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const portfolioSelect = document.getElementById("portfolio");
+      Object.keys(portfolioPlants).forEach(p => {
+        const opt = document.createElement("option");
+        opt.value = p;
+        opt.textContent = p;
+        portfolioSelect.appendChild(opt);
+      });
+    });
   </script>
 </head>
 <body>
@@ -198,8 +211,7 @@
 
           <label for="portfolio">Portfolio:</label>
           <select id="portfolio" name="portfolio" onchange="adminLoadPortfolio()">
-            <option value="">-- Select Portfolio --</option>
-            ${Object.keys(portfolioPlants).map(p => `<option value="${p}">${p}</option>`).join('')}
+            <!-- Options filled dynamically -->
           </select>
         </div>
 
