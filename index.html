@@ -173,13 +173,16 @@
       formData.append("username", currentUser.username);
       formData.append("team", currentUser.team);
       formData.append("portfolio", document.getElementById("portfolio").value);
-      formData.append("world", document.getElementById("worldSelect").value);
-
+    
+      const worldValue = currentUser.role === "admin"
+        ? document.getElementById("worldSelect").value
+        : currentUser.world;
+      formData.append("world", worldValue);
+    
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(response => alert('Submission successful!'))
         .catch(error => alert('Submission failed: ' + error.message));
     }
-
     function adminLoadPortfolio() {
       const portfolio = document.getElementById("portfolio").value;
       generatePlantForm(portfolio);
