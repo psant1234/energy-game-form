@@ -144,7 +144,6 @@
       document.getElementById("username").value = "";
       document.getElementById("password").value = "";
       document.getElementById("plantSection").innerHTML = "";
-      document.getElementById("lastSubmission").innerHTML = "";
     }
 
     function generatePlantForm(portfolio) {
@@ -169,6 +168,15 @@
           table.appendChild(row);
         });
         section.appendChild(table);
+
+        const retrieveBtn = document.createElement("button");
+        retrieveBtn.innerText = "Retrieve Last Submission";
+        retrieveBtn.onclick = getLastSubmission;
+        section.appendChild(retrieveBtn);
+
+        const lastDiv = document.createElement("div");
+        lastDiv.id = "lastSubmission";
+        section.appendChild(lastDiv);
       }
     }
 
@@ -193,7 +201,7 @@
       const display = document.getElementById("lastSubmission");
       display.innerHTML = "Loading last submission...";
 
-      fetch(`https://script.google.com/macros/s/YOUR_SCRIPT_ID_HERE/exec?action=last&username=${currentUser.username}`)
+      fetch(`${scriptURL}?action=last&username=${currentUser.username}`)
         .then(res => res.json())
         .then(data => {
           if (data.success && data.rows.length > 0) {
@@ -253,9 +261,8 @@
         <div id="plantSection"></div>
         <button type="submit">Submit</button>
       </form>
-      <button onclick="getLastSubmission()">Retrieve Last Submission</button>
-      <div id="lastSubmission"></div>
     </div>
   </div>
 </body>
 </html>
+
