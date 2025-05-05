@@ -108,6 +108,7 @@
           document.getElementById("world").value = data.world;
           if (data.role === "admin") {
             document.getElementById("adminControls").style.display = "block";
+            document.getElementById("world").disabled = false;
           } else {
             document.getElementById("portfolio").value = data.portfolio;
             generatePlantForm(data.portfolio);
@@ -233,17 +234,19 @@
         <input type="hidden" id="world" name="world">
         <div id="adminControls" style="display:none">
           <label for="world">World:</label>
-          <select id="world" name="world">
-            <option value="G1">G1</option>
-            <option value="G2">G2</option>
-            <option value="G3">G3</option>
-          </select>
+<select id="world" name="world" disabled>
+  <option value="MIT 035 G1">MIT 035 G1</option>
+  <option value="MIT 035 G2">MIT 035 G2</option>
+  <option value="MIT 035 G3">MIT 035 G3</option>
+</select>
           <label for="portfolio">Portfolio:</label>
           <select id="portfolio" name="portfolio" onchange="adminLoadPortfolio()">
             <!-- Filled dynamically -->
           </select>
         </div>
         <div id="plantSection"></div>
+<button type="button" onclick="getLastSubmission()">Retrieve Last Submission</button>
+<div id="lastSubmission"></div>
         <button type="submit">Submit</button>
       </form>
     </div>
