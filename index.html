@@ -107,11 +107,17 @@
           document.getElementById("team").value = data.team;
           document.getElementById("world").value = data.world;
           if (data.role === "admin") {
-            document.getElementById("adminControls").style.display = "block";
+          document.getElementById("adminControls").style.display = "block";
+          document.getElementById("displayUsername").textContent = data.username;
+          document.getElementById("displayWorld").textContent = data.world;
+          document.getElementById("displayPortfolio").textContent = "ALL";
             document.getElementById("world").disabled = false;
           } else {
             document.getElementById("portfolio").value = data.portfolio;
           document.getElementById("world").value = data.world;
+          document.getElementById("displayUsername").textContent = data.username;
+          document.getElementById("displayWorld").textContent = data.world;
+          document.getElementById("displayPortfolio").textContent = data.portfolio;
           generatePlantForm(data.portfolio);
             document.getElementById("portfolio").disabled = true;
           }
@@ -165,7 +171,7 @@
       formData.append("username", currentUser.username);
       formData.append("team", currentUser.team);
       formData.append("portfolio", document.getElementById("portfolio").value);
-      formData.append("world", currentUser.world);
+      formData.append("world", document.getElementById("world").value);
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(response => alert('Submission successful!'))
         .catch(error => alert('Submission failed: ' + error.message));
@@ -225,6 +231,11 @@
       <button onclick="login()">Login</button>
     </div>
     <div id="formSection" style="display:none">
+  <div style="margin-bottom: 15px; font-weight: bold; color: #8A1538;">
+    Logged in as: <span id="displayUsername"></span><br>
+    World: <span id="displayWorld"></span><br>
+    Portfolio: <span id="displayPortfolio"></span>
+  </div>
       <button onclick="logout()" style="float:right; background-color:#ccc; color:#333">Log Out</button>
       <form id="energyForm" onsubmit="event.preventDefault(); submitForm();">
         <input type="hidden" id="team" name="team">
@@ -242,12 +253,13 @@
           </select>
         </div>
         <div id="plantSection"></div>
-<button type="button" onclick="getLastSubmission()">Retrieve Last Submission</button>
-<div id="lastSubmission"></div>
+<div style="margin-top: 20px;">
+  <button type="button" onclick="getLastSubmission()">Retrieve Last Submission</button>
+  <div id="lastSubmission"></div>
+</div>
         <button type="submit">Submit</button>
       </form>
     </div>
   </div>
 </body>
 </html>
-
