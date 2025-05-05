@@ -89,7 +89,7 @@
     };
 
     let currentUser = {};
-    const scriptURL = 'https://script.google.com/macros/s/AKfycbzKQPRedbiR6jJ4Ked4NIThDYP1rj7fEJ3att1EzMVmC_QzBtbverwqp1d_j7S2q3JGpg/exec';
+    const scriptURL = 'https://script.google.com/macros/s/YOUR_SCRIPT_URL_HERE/exec'; // <-- replace with your actual script URL
 
     function login() {
       const username = document.getElementById("username").value;
@@ -106,20 +106,18 @@
           document.getElementById("formSection").style.display = "block";
           document.getElementById("team").value = data.team;
           document.getElementById("world").value = data.world;
-          if (data.role === "admin") {
-          document.getElementById("adminControls").style.display = "block";
-          document.getElementById("displayUsername").textContent = data.username;
-          document.getElementById("displayWorld").textContent = data.world;
-          document.getElementById("displayPortfolio").textContent = "ALL";
-            document.getElementById("world").disabled = false;
-          } else {
-            document.getElementById("portfolio").value = data.portfolio;
-          document.getElementById("world").value = data.world;
+
           document.getElementById("displayUsername").textContent = data.username;
           document.getElementById("displayWorld").textContent = data.world;
           document.getElementById("displayPortfolio").textContent = data.portfolio;
-          generatePlantForm(data.portfolio);
+
+          if (data.role === "admin") {
+            document.getElementById("adminControls").style.display = "block";
+            document.getElementById("world").disabled = false;
+          } else {
+            document.getElementById("portfolio").value = data.portfolio;
             document.getElementById("portfolio").disabled = true;
+            generatePlantForm(data.portfolio);
           }
         } else {
           alert("Invalid credentials. Please try again.");
@@ -171,7 +169,7 @@
       formData.append("username", currentUser.username);
       formData.append("team", currentUser.team);
       formData.append("portfolio", document.getElementById("portfolio").value);
-      formData.append("world", document.getElementById("world").value);
+      formData.append("world", document.getElementById("world").value); // ✅ FIXED LINE
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(response => alert('Submission successful!'))
         .catch(error => alert('Submission failed: ' + error.message));
@@ -231,32 +229,32 @@
       <button onclick="login()">Login</button>
     </div>
     <div id="formSection" style="display:none">
-  <div style="margin-bottom: 15px; font-weight: bold; color: #8A1538;">
-    Logged in as: <span id="displayUsername"></span><br>
-    World: <span id="displayWorld"></span><br>
-    Portfolio: <span id="displayPortfolio"></span>
-  </div>
+      <div style="margin-bottom: 15px; font-weight: bold; color: #8A1538;">
+        Logged in as: <span id="displayUsername"></span><br>
+        World: <span id="displayWorld"></span><br>
+        Portfolio: <span id="displayPortfolio"></span>
+      </div>
       <button onclick="logout()" style="float:right; background-color:#ccc; color:#333">Log Out</button>
       <form id="energyForm" onsubmit="event.preventDefault(); submitForm();">
         <input type="hidden" id="team" name="team">
         <input type="hidden" id="world" name="world">
         <div id="adminControls" style="display:none">
           <label for="world">World:</label>
-<select id="world" name="world" disabled>
-  <option value="MIT 035 G1">MIT 035 G1</option>
-  <option value="MIT 035 G2">MIT 035 G2</option>
-  <option value="MIT 035 G3">MIT 035 G3</option>
-</select>
+          <select id="world" name="world" disabled>
+            <option value="MIT 035 G1">MIT 035 G1</option>
+            <option value="MIT 035 G2">MIT 035 G2</option>
+            <option value="MIT 035 G3">MIT 035 G3</option>
+          </select>
           <label for="portfolio">Portfolio:</label>
           <select id="portfolio" name="portfolio" onchange="adminLoadPortfolio()">
             <!-- Filled dynamically -->
           </select>
         </div>
         <div id="plantSection"></div>
-<div style="margin-top: 20px;">
-  <button type="button" onclick="getLastSubmission()">Retrieve Last Submission</button>
-  <div id="lastSubmission"></div>
-</div>
+        <div style="margin-top: 20px;">
+          <button type="button" onclick="getLastSubmission()">Retrieve Last Submission</button>
+          <div id="lastSubmission"></div>
+        </div>
         <button type="submit">Submit</button>
       </form>
     </div>
