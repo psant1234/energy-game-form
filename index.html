@@ -111,7 +111,8 @@
             document.getElementById("world").disabled = false;
           } else {
             document.getElementById("portfolio").value = data.portfolio;
-            generatePlantForm(data.portfolio);
+          document.getElementById("world").value = data.world;
+          generatePlantForm(data.portfolio);
             document.getElementById("portfolio").disabled = true;
           }
         } else {
