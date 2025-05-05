@@ -148,10 +148,6 @@
           table.appendChild(row);
         });
         section.appendChild(table);
-        const retrieveBtn = document.createElement("button");
-        retrieveBtn.innerText = "Retrieve Last Submission";
-        retrieveBtn.onclick = getLastSubmission;
-        section.appendChild(retrieveBtn);
         const lastDiv = document.createElement("div");
         lastDiv.id = "lastSubmission";
         section.appendChild(lastDiv);
@@ -168,7 +164,7 @@
       formData.append("username", currentUser.username);
       formData.append("team", currentUser.team);
       formData.append("portfolio", document.getElementById("portfolio").value);
-      formData.append("world", document.getElementById("world").value);
+      formData.append("world", currentUser.world);
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(response => alert('Submission successful!'))
         .catch(error => alert('Submission failed: ' + error.message));
@@ -253,3 +249,4 @@
   </div>
 </body>
 </html>
+
