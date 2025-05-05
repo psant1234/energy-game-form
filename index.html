@@ -112,7 +112,7 @@
             worldSelect.disabled = false;
           } else {
             portfolioSelect.value = data.portfolio;
-            worldSelect.value = data.world; // ✅ fix: assign world value for players
+            worldSelect.value = data.world;
             portfolioSelect.disabled = true;
             worldSelect.disabled = true;
             generatePlantForm(data.portfolio);
@@ -160,7 +160,7 @@
       formData.append("username", currentUser.username);
       formData.append("team", currentUser.team);
       formData.append("portfolio", document.getElementById("portfolio").value);
-      formData.append("world", document.getElementById("worldSelect").value); // ✅ fix: use dropdown value
+      formData.append("world", document.getElementById("worldSelect").value);
 
       fetch(scriptURL, { method: 'POST', body: formData })
         .then(response => alert('Submission successful!'))
