@@ -10,7 +10,6 @@
       padding: 20px;
       color: #333;
     }
-
     .container {
       max-width: 800px;
       margin: 0 auto;
@@ -19,25 +18,21 @@
       border-radius: 10px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
     }
-
     h2 {
       color: #8A1538;
       text-align: center;
     }
-
     .logo {
       display: block;
       margin: 0 auto 20px auto;
       max-width: 150px;
     }
-
     label {
       font-weight: bold;
       display: block;
       margin-top: 15px;
       color: #8A1538;
     }
-
     select, input[type="number"], input[type="text"], input[type="password"] {
       width: 100%;
       padding: 8px;
@@ -46,7 +41,6 @@
       border-radius: 5px;
       box-sizing: border-box;
     }
-
     button {
       background-color: #8A1538;
       color: white;
@@ -57,28 +51,23 @@
       font-weight: bold;
       cursor: pointer;
     }
-
     button:hover {
       background-color: #6d0f2e;
     }
-
     table {
       border-collapse: collapse;
       width: 100%;
       margin-top: 20px;
     }
-
     th, td {
       border: 1px solid #ddd;
       padding: 10px;
       text-align: center;
     }
-
     th {
       background-color: #8A1538;
       color: white;
     }
-
     #lastSubmission {
       margin-top: 20px;
       background-color: #eef0f2;
@@ -102,10 +91,91 @@
     let currentUser = {};
     const scriptURL = 'https://script.google.com/macros/s/AKfycbzKQPRedbiR6jJ4Ked4NIThDYP1rj7fEJ3att1EzMVmC_QzBtbverwqp1d_j7S2q3JGpg/exec';
 
+    function login() {
+      const username = document.getElementById("username").value;
+      const password = document.getElementById("password").value;
+      fetch(scriptURL, {
+        method: 'POST',
+        body: new URLSearchParams({ action: 'validate', username, password })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          currentUser = data;
+          document.getElementById("loginSection").style.display = "none";
+          document.getElementById("formSection").style.display = "block";
+          document.getElementById("team").value = data.team;
+          document.getElementById("world").value = data.world;
+          if (data.role === "admin") {
+            document.getElementById("adminControls").style.display = "block";
+          } else {
+            document.getElementById("portfolio").value = data.portfolio;
+            generatePlantForm(data.portfolio);
+            document.getElementById("portfolio").disabled = true;
+          }
+        } else {
+          alert("Invalid credentials. Please try again.");
+        }
+      });
+    }
+
+    function logout() {
+      currentUser = {};
+      document.getElementById("formSection").style.display = "none";
+      document.getElementById("loginSection").style.display = "block";
+      document.getElementById("username").value = "";
+      document.getElementById("password").value = "";
+      document.getElementById("plantSection").innerHTML = "";
+    }
+
+    function generatePlantForm(portfolio) {
+      const section = document.getElementById("plantSection");
+      section.innerHTML = '';
+      const table = document.createElement("table");
+      const header = document.createElement("tr");
+      header.innerHTML = '<th>Plant</th><th>Hour 1</th><th>Hour 2</th><th>Hour 3</th><th>Hour 4</th>';
+      table.appendChild(header);
+      if (portfolio in portfolioPlants) {
+        portfolioPlants[portfolio].forEach(plant => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${plant}</td>
+            <td><input type="number" name="${plant}_price1" min="0" max="500" step="0.01"></td>
+            <td><input type="number" name="${plant}_price2" min="0" max="500" step="0.01"></td>
+            <td><input type="number" name="${plant}_price3" min="0" max="500" step="0.01"></td>
+            <td><input type="number" name="${plant}_price4" min="0" max="500" step="0.01"></td>`;
+          table.appendChild(row);
+        });
+        section.appendChild(table);
+        const retrieveBtn = document.createElement("button");
+        retrieveBtn.innerText = "Retrieve Last Submission";
+        retrieveBtn.onclick = getLastSubmission;
+        section.appendChild(retrieveBtn);
+        const lastDiv = document.createElement("div");
+        lastDiv.id = "lastSubmission";
+        section.appendChild(lastDiv);
+      }
+    }
+
+    function adminLoadPortfolio() {
+      const selectedPortfolio = document.getElementById("portfolio").value;
+      generatePlantForm(selectedPortfolio);
+    }
+
+    function submitForm() {
+      const formData = new FormData(document.getElementById("energyForm"));
+      formData.append("username", currentUser.username);
+      formData.append("team", currentUser.team);
+      formData.append("portfolio", document.getElementById("portfolio").value);
+      formData.append("world", document.getElementById("world").value);
+      fetch(scriptURL, { method: 'POST', body: formData })
+        .then(response => alert('Submission successful!'))
+        .catch(error => alert('Submission failed: ' + error.message));
+    }
+
     function getLastSubmission() {
       const display = document.getElementById("lastSubmission");
       display.innerHTML = "Loading last submission...";
-
       fetch(`${scriptURL}?action=last&username=${currentUser.username}`)
         .then(res => res.json())
         .then(data => {
@@ -117,12 +187,10 @@
               const price2 = document.querySelector(`input[name='${plant}_price2']`);
               const price3 = document.querySelector(`input[name='${plant}_price3']`);
               const price4 = document.querySelector(`input[name='${plant}_price4']`);
-
               if (price1) price1.value = hour1;
               if (price2) price2.value = hour2;
               if (price3) price3.value = hour3;
               if (price4) price4.value = hour4;
-
               display.innerHTML += `<b>${plant}</b>: [${hour1}, ${hour2}, ${hour3}, ${hour4}]<br>`;
             });
           } else {
@@ -133,29 +201,36 @@
           display.innerHTML = "Error retrieving last submission.";
         });
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const portfolioSelect = document.getElementById("portfolio");
+      if (portfolioSelect) {
+        Object.keys(portfolioPlants).forEach(p => {
+          const opt = document.createElement("option");
+          opt.value = p;
+          opt.textContent = p;
+          portfolioSelect.appendChild(opt);
+        });
+      }
+    });
   </script>
 </head>
 <body>
   <div class="container">
     <img src="https://upload.wikimedia.org/wikipedia/commons/0/0c/MIT_logo.svg" alt="MIT Logo" class="logo">
     <h2>Energy Game Submission Form</h2>
-
     <div id="loginSection">
       <label>Username:</label>
       <input type="text" id="username" name="username" autocomplete="username">
-
       <label>Password:</label>
       <input type="password" id="password" name="password" autocomplete="current-password">
-
       <button onclick="login()">Login</button>
     </div>
-
     <div id="formSection" style="display:none">
       <button onclick="logout()" style="float:right; background-color:#ccc; color:#333">Log Out</button>
       <form id="energyForm" onsubmit="event.preventDefault(); submitForm();">
         <input type="hidden" id="team" name="team">
         <input type="hidden" id="world" name="world">
-
         <div id="adminControls" style="display:none">
           <label for="world">World:</label>
           <select id="world" name="world">
@@ -163,18 +238,12 @@
             <option value="G2">G2</option>
             <option value="G3">G3</option>
           </select>
-
           <label for="portfolio">Portfolio:</label>
           <select id="portfolio" name="portfolio" onchange="adminLoadPortfolio()">
             <!-- Filled dynamically -->
           </select>
         </div>
-
         <div id="plantSection"></div>
         <button type="submit">Submit</button>
       </form>
     </div>
-  </div>
-</body>
-</html>
-
